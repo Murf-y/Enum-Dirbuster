@@ -51,7 +51,13 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
     target_url = args[0] # Get the target website's URL from the arguments
 
     print(f"Target website's URL: {target_url}")
-
+    
+    # Check if the target website's URL is valid using requests
+    try:
+        requests.get(target_url)
+    except requests.exceptions.MissingSchema:
+        print("Invalid URL. Please enter a valid URL.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
