@@ -59,5 +59,12 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
         print("Invalid URL. Please enter a valid URL.")
         sys.exit(1)
 
+    # Check if there is a input_files directory
+    if "input_files" not in os.listdir("."):
+        print("The input_files directory does not exist.")
+        print("Please create the input_files directory and add the subdomains_dictionary and dirs_dictionary.bat files.")
+        sys.exit(1)
+    
+    
 if __name__ == "__main__":
     main()
