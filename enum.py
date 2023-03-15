@@ -123,5 +123,14 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
             pass
     
     print("Enumeration complete.")
+
+     # Create the output_files directory if it does not exist
+
+    if "output_files" not in os.listdir("."):
+        os.mkdir("output_files")
+    else:
+        # Delete the contents of the output_files directory
+        for file in os.listdir("./output_files"):
+            os.remove(f"./output_files/{file}")
 if __name__ == "__main__":
     main()
