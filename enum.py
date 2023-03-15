@@ -14,7 +14,32 @@ The script must store the input file values and write the output to the followin
 """
 
 
+import os
+import re
 import sys
+import requests
+
+def check_for_links(html):
+    """
+    Check if the html contains any links
+    href=...
+    or 
+    src=...
+    or 
+    url(...
+    
+    Save the links in a list and return it
+    """
+    html = str(html)
+    # use lookbehind to check if the link is preceded by href=, src= or url(
+    
+    # stop at the first quote or parenthesis
+
+    pattern = r"(?<=href=\")([^\"]+)|(?<=src=\")([^\"]+)|(?<=url\()([^\)]+)"
+    links = re.findall(pattern, html)
+
+    flattened_links = [link for sublist in links for link in sublist]
+    return [l for l in flattened_links if l.startswith("http") or l.startswith("www") or l.startswith("https") or l.startswith("ftp")]
 
 def main():
     print("""\n\n                                                                                                  
