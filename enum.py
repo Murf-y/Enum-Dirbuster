@@ -92,8 +92,36 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
             if req.status_code == 200:
                 print(f"Found subdomain: {url}")
                 subdomains_output.add(url)
-                
+
         except requests.exceptions.ConnectionError:
             pass
+    
+    # Check for directories
+    for directory in directories:
+        if directory == "":
+            continue
+
+        # Check if target url uses https
+        if "https" in target_url:
+            url = f"https://{target_url[8:]}/{directory}"
+        else:
+            url = f"http://{target_url[7:]}/{directory}"
+
+        try:
+            req = requests.get(url)
+            if req.status_code == 200:
+                # if directory is a file, add it to the files_output set
+                if "." in directory:
+                    print(f"Found file: {url}")
+                    files_output.add(url)
+                            
+                else:
+                    print(f"Found directory: {url}")
+                    directories_output.add(url)
+
+        except requests.exceptions.ConnectionError:
+            pass
+    
+    print("Enumeration complete.")
 if __name__ == "__main__":
     main()
