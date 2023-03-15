@@ -69,5 +69,11 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
     subdomains = open("./input_files/subdomains_dictionary.bat", "r").read().splitlines()
     directories = open("./input_files/dirs_dictionary.bat", "r").read().splitlines()
 
+    # Create a set so we dont have duplicate entries
+    subdomains_output = set()
+    directories_output = set()
+    files_output = set()
+
+    
 if __name__ == "__main__":
     main()
