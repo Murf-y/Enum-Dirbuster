@@ -132,5 +132,19 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
         # Delete the contents of the output_files directory
         for file in os.listdir("./output_files"):
             os.remove(f"./output_files/{file}")
+
+     # Write the subdomains_output set to a file
+    with open("./output_files/subdomains_output.bat", "w") as f:
+        for subdomain in subdomains_output:
+            f.write(subdomain + "\n")
+    
+    with open("./output_files/directories_output.bat", "w") as f:
+        for dir in directories_output:
+            f.write(dir + "\n")
+    
+    with open("./output_files/files_output.bat", "w") as f:
+        for file in files_output:
+            f.write(file + "\n")
+
 if __name__ == "__main__":
     main()
