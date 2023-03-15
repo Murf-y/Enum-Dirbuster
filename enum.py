@@ -65,6 +65,9 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
         print("Please create the input_files directory and add the subdomains_dictionary and dirs_dictionary.bat files.")
         sys.exit(1)
     
-    
+    # Read the subdomains and directories from the provided files
+    subdomains = open("./input_files/subdomains_dictionary.bat", "r").read().splitlines()
+    directories = open("./input_files/dirs_dictionary.bat", "r").read().splitlines()
+
 if __name__ == "__main__":
     main()
