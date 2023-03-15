@@ -21,4 +21,4 @@ python3 enum.py https://example.com
 
 ## License 📜
 
-Licensed under the [MIT License](
+Licensed under the [MIT License](./LICENSE.md)
