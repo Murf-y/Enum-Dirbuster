@@ -74,6 +74,26 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
     directories_output = set()
     files_output = set()
 
-    
+    print("\n\nEnumerating subdomains, directories and files...\n\n")
+
+    # Check for subdomains
+    for subdomain in subdomains:
+        if subdomain == "":
+            continue
+
+        # Check if target url uses https
+        if "https" in target_url:
+            url = f"https://{subdomain}.{target_url[8:]}"
+        else:
+            url = f"http://{subdomain}.{target_url[7:]}"
+        
+        try:
+            req = requests.get(url)
+            if req.status_code == 200:
+                print(f"Found subdomain: {url}")
+                subdomains_output.add(url)
+                
+        except requests.exceptions.ConnectionError:
+            pass
 if __name__ == "__main__":
     main()
