@@ -186,6 +186,26 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
                     print(f"Found directory: {url}")
                     directories_output.add(url)                    
 
+                    extra_links = check_for_links(req.content)
+
+                    # Add the links to the directories_output set
+                    for link in extra_links:
+                        if link == "" or link in directories_output:
+                            continue
+                    
+                        # Check if link is a subdomain or directory using regex
+                        # Link is a subdomain if it contains http or https then some text then a dot then the target url
+
+                        regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
+
+                        # Subdomain
+                        if re.search(regex, link):
+                            if link not in subdomains_output:
+                                subdomains_output.add(link)
+                                print(f"IN DIRECTORY: Found subdomain: {link}")
+                            elif link not in directories_output:
+                                directories_output.add(link)
+                                print(f"IN DIRECTORY: Found directory: {link}")
         except requests.exceptions.ConnectionError:
             pass
     
