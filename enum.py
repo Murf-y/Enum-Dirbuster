@@ -254,7 +254,7 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
     # Check if there is a input_files directory
     if "input_files" not in os.listdir("."):
         print("The input_files directory does not exist.")
-        print("Please create the input_files directory and add the subdomains_dictionary and dirs_dictionary.bat files.")
+        print("Please create the input_files directory and add input files.")
         sys.exit(1)
     
     # Read the subdomains and directories from the provided files
