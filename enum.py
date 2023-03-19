@@ -177,7 +177,7 @@ def subdomain_worker_thread(target_url, subdomains):
     print(f"Generated {len(subdomains_chunks)} subdomains chunks")
     
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(subdomains_chunks)) as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         for subdomain_chunk in subdomains_chunks:
             executor.submit(execute_subdomain_bruteforce, target_url, subdomain_chunk)
     
@@ -192,7 +192,7 @@ def directory_worker_thread(target_url, directories):
     directories_chunks = [directories[i:i + chunk_size] for i in range(0, len(directories), chunk_size)]
     print(f"Generated {len(directories_chunks)} directories chunks")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(directories_chunks)) as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         for directory_chunk in directories_chunks:
             executor.submit(execute_directory_bruteforce, target_url, directory_chunk)
 
