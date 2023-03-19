@@ -1,5 +1,9 @@
 # Enum 📁
 
+<p align="center">
+<img src="./logo.png" width="350">
+</p>
+
 ```
 EEEEEEEEEEEEEEEEEEEEEENNNNNNNN        NNNNNNNNUUUUUUUU     UUUUUUUUMMMMMMMM               MMMMMMMM
 E::::::::::::::::::::EN:::::::N       N::::::NU::::::U     U::::::UM:::::::M             M:::::::M
