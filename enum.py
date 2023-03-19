@@ -97,7 +97,6 @@ def check_subdomains(target_url, subdomain):
     except Exception as e:
         pass
 
-
 def check_directories(target_url, directory):
     if directory == "":
         return
@@ -196,7 +195,6 @@ def directory_worker_thread(target_url, directories):
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(directories_chunks)) as executor:
         for directory_chunk in directories_chunks:
             executor.submit(execute_directory_bruteforce, target_url, directory_chunk)
-    
 
 def main():
     global subdomains_output
@@ -332,7 +330,6 @@ def brute_force_login(login_api):
         if req.status_code == 200:
             print(f"Found password: {password}")
             return password
-
 
 if __name__ == "__main__":
     subdomains_output = set()
