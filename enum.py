@@ -22,7 +22,7 @@ import requests
 import concurrent.futures
 import threading
 
-def check_for_links(html):
+def check_for_links(html, target_url, in_what):
     global directories_output
 
     """
@@ -36,8 +36,9 @@ def check_for_links(html):
     Save the links in a list and return it
     """
     html = str(html)
-    # use lookbehind to check if the link is preceded by href=, src= or url(
+
     
+    # use lookbehind to check if the link is preceded by href=, src= or url(
     # stop at the first quote or parenthesis
 
     pattern = r"(?<=href=\")([^\"]+)|(?<=src=\")([^\"]+)|(?<=url\()([^\)]+)"
@@ -48,7 +49,17 @@ def check_for_links(html):
             if link == "":
                 continue
             if l.startswith("http") or l.startswith("www") or l.startswith("https") or l.startswith("ftp"):
-                directories_output.add(link)
+
+                # Check if the link is a subdomain or a directory
+                regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
+                
+                # Subdomain
+                if re.search(regex, link):
+                    subdomains_output.add(link)
+                    print(f"{in_what}: Found subdomain: {link}")
+                else:
+                    directories_output.add(link)
+                    print(f"{in_what}: Found directory: {link}")
 
 def is_valid_url(url):
     return True if re.match(r"^(http|https|ftp)://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(/\S*)?$", url) else False
@@ -74,25 +85,8 @@ def check_subdomains(target_url, subdomain):
         if req.status_code == 200 and  "404" not in req.text:
             print(f"Found subdomain: {url}")
             subdomains_output.add(url)
-            # # Check if the subdomain has any links
-            # subdomain_links = check_for_links(req.content)
-            # # Add the links to the directories_output set
-            # for link in subdomain_links:
-            #     if link == "":
-            #         continue
-                
-            #     # Check if link is a subdomain or directory using regex
-            #     # Link is a subdomain if it contains http or https then some text then a dot then the target url
-            #     regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
-                
-            #     # Subdomain
-            #     if re.search(regex, link):
-            #         if link not in subdomains_output:
-            #             subdomains_output.add(link)
-            #             print(f"IN SUBDOMAIN: Found subdomain: {link}")
-            #     elif link not in directories_output:
-            #         directories_output.add(link)
-            #         print(f"IN SUBDOMAIN: Found directory: {link}")
+            check_for_links(html, target_url, "IN SUBDOMAIN")
+
     # except all exceptions  
     except Exception as e:
         pass
@@ -115,44 +109,12 @@ def check_directories(target_url, directory):
             if "." in directory:
                 print(f"Found file: {url}")
                 files_output.add(url)
-                
-                # extra_links = check_for_links(req.content)
-                # # Add the links to the directories_output set
-                # for link in extra_links:
-                #     if link == "" or link in directories_output:
-                #         continue
-                
-                #     # Check if link is a subdomain or directory using regex
-                #     # Link is a subdomain if it contains http or https then some text then a dot then the target url
-                #     regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
-                #     # Subdomain
-                #     if re.search(regex, link):
-                #         if link not in subdomains_output:
-                #             subdomains_output.add(link)
-                #             print(f"IN FILE: Found subdomain: {link}")
-                #         elif link not in directories_output:
-                #             directories_output.add(link)
-                #             print(f"IN FILE: Found directory: {link}")
+                check_for_links(html, target_url, "IN FILE")
+
             else:
                 print(f"Found directory: {url}")
                 directories_output.add(url)                    
-                # extra_links = check_for_links(req.content)
-                # # Add the links to the directories_output set
-                # for link in extra_links:
-                #     if link == "" or link in directories_output:
-                #         continue
-                
-                #     # Check if link is a subdomain or directory using regex
-                #     # Link is a subdomain if it contains http or https then some text then a dot then the target url
-                #     regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
-                #     # Subdomain
-                #     if re.search(regex, link):
-                #         if link not in subdomains_output:
-                #             subdomains_output.add(link)
-                #             print(f"IN DIRECTORY: Found subdomain: {link}")
-                #         elif link not in directories_output:
-                #             directories_output.add(link)
-                #             print(f"IN DIRECTORY: Found directory: {link}")
+                check_for_links(html, target_url, "IN DIRECTORY")
     except Exception as e:
         pass
 
@@ -164,12 +126,11 @@ def execute_directory_bruteforce(target_url, directories):
     for directory in directories:
         check_directories(target_url, directory)
 
-def subdomain_worker_thread(target_url, subdomains):
-    global number_of_threads_for_subdomain
+def subdomain_worker_thread(target_url, subdomains, num_threads):
 
     print("Starting subdomain worker thread...")
 
-    chunk_size = int(len(subdomains)/number_of_threads_for_subdomain)
+    chunk_size = int(len(subdomains)/num_threads)
 
     print(f"Subdomains Chunk size: {chunk_size}")
 
@@ -182,11 +143,11 @@ def subdomain_worker_thread(target_url, subdomains):
             executor.submit(execute_subdomain_bruteforce, target_url, subdomain_chunk)
     
 
-def directory_worker_thread(target_url, directories):
-    global number_of_threads_for_directories
+def directory_worker_thread(target_url, directories, num_threads):
+
     print("Starting directory worker thread...")
 
-    chunk_size = int(len(directories)/number_of_threads_for_directories)
+    chunk_size = int(len(directories)/num_threads)
 
     print(f"Directories Chunk size: {chunk_size}")
     directories_chunks = [directories[i:i + chunk_size] for i in range(0, len(directories), chunk_size)]
@@ -204,6 +165,8 @@ def main():
     global subdomain_file_path
     global directory_file_path
 
+    global number_of_threads_for_subdomains
+    global number_of_threads_for_directories
     print("""\n\n                                                                                                  
 EEEEEEEEEEEEEEEEEEEEEENNNNNNNN        NNNNNNNNUUUUUUUU     UUUUUUUUMMMMMMMM               MMMMMMMM
 E::::::::::::::::::::EN:::::::N       N::::::NU::::::U     U::::::UM:::::::M             M:::::::M
@@ -266,9 +229,9 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
 
    
     print("Starting subdomain and directory worker threads concurrently...")
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        executor.submit(subdomain_worker_thread, target_url, subdomains)
-        executor.submit(directory_worker_thread, target_url, directories)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.submit(subdomain_worker_thread, target_url, subdomains, number_of_threads_for_subdomains)
+        executor.submit(directory_worker_thread, target_url, directories, number_of_threads_for_directories)
 
     executor.shutdown(wait=True)
 
@@ -336,10 +299,10 @@ if __name__ == "__main__":
     directories_output = set()
     files_output = set()
 
-    subdomain_file_path = "./input_files/subdomains_tiny.bat"
-    directory_file_path = "./input_files/dirs_small.bat"
+    subdomain_file_path = "./input_files/subdomains_small.bat"
+    directory_file_path = "./input_files/dirs_big.bat"
 
-    number_of_threads_for_subdomain = 10
+    number_of_threads_for_subdomains = 10
     number_of_threads_for_directories = 10
 
     main()
