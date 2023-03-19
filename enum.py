@@ -37,7 +37,7 @@ def check_for_links(html, target_url, in_what):
     """
     html = str(html)
 
-    
+
     # use lookbehind to check if the link is preceded by href=, src= or url(
     # stop at the first quote or parenthesis
 
@@ -299,8 +299,8 @@ if __name__ == "__main__":
     directories_output = set()
     files_output = set()
 
-    subdomain_file_path = "./input_files/subdomains_small.bat"
-    directory_file_path = "./input_files/dirs_big.bat"
+    subdomain_file_path = "./input_files/subdomains_tiny.bat"
+    directory_file_path = "./input_files/dirs_small.bat"
 
     number_of_threads_for_subdomains = 10
     number_of_threads_for_directories = 10
