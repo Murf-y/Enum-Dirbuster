@@ -159,12 +159,10 @@ def check_directories(target_url, directory):
 
 def execute_subdomain_bruteforce(target_url, subdomains):
     for subdomain in subdomains:
-        print(f"Checking subdomain: {subdomain}")
         check_subdomains(target_url, subdomain)
 
 def execute_directory_bruteforce(target_url, directories):
     for directory in directories:
-        print(f"Checking directory: {directory}")
         check_directories(target_url, directory)
 
 def subdomain_worker_thread(target_url, subdomains):
