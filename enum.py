@@ -22,6 +22,12 @@ import requests
 import concurrent.futures
 import threading
 
+from tqdm import tqdm
+
+# Pre compiled regex for checking if the link is a subdomain or a directory
+
+check_links_preceded_by_pattern = re.compile(r"(?<=href=\")([^\"]+)|(?<=src=\")([^\"]+)|(?<=url\()([^\)]+)")
+check_if_valid_url_pattern = re.compile(r"^(http|https|ftp)://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(/\S*)?$")
 def check_for_links(html, target_url, in_what):
     global directories_output
 
@@ -41,18 +47,15 @@ def check_for_links(html, target_url, in_what):
     # use lookbehind to check if the link is preceded by href=, src= or url(
     # stop at the first quote or parenthesis
 
-    pattern = r"(?<=href=\")([^\"]+)|(?<=src=\")([^\"]+)|(?<=url\()([^\)]+)"
-    links = re.findall(pattern, html)
+    links = re.findall(check_links_preceded_by_pattern, html)
 
     for sublist in links:
         for link in sublist:
             if link == "":
                 continue
-            if l.startswith("http") or l.startswith("www") or l.startswith("https") or l.startswith("ftp"):
-
+            if is_valid_url(link):
                 # Check if the link is a subdomain or a directory
                 regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
-                
                 # Subdomain
                 if re.search(regex, link):
                     subdomains_output.add(link)
@@ -62,7 +65,7 @@ def check_for_links(html, target_url, in_what):
                     print(f"{in_what}: Found directory: {link}")
 
 def is_valid_url(url):
-    return True if re.match(r"^(http|https|ftp)://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(/\S*)?$", url) else False
+    return True if re.search(check_if_valid_url_pattern, url) else False
 
 def check_subdomains(target_url, subdomain):
     global subdomains_output
@@ -83,9 +86,11 @@ def check_subdomains(target_url, subdomain):
         req = requests.head(url)
         # No 404 page
         if req.status_code == 200 and  "404" not in req.text:
+            # Only if link is valid then get the whole page
+            req = requests.get(url)
             print(f"Found subdomain: {url}")
             subdomains_output.add(url)
-            check_for_links(html, target_url, "IN SUBDOMAIN")
+            check_for_links(req.text, target_url, "IN SUBDOMAIN")
 
     # except all exceptions  
     except Exception as e:
@@ -106,25 +111,30 @@ def check_directories(target_url, directory):
         req = requests.head(url)
         if req.status_code == 200 and "404" not in req.text:
             # if directory is a file, add it to the files_output set
+
+            # Only if link is valid then get the whole page
+            req = requests.get(url)
+
+
             if "." in directory:
                 print(f"Found file: {url}")
                 files_output.add(url)
-                check_for_links(html, target_url, "IN FILE")
+                check_for_links(req.text, target_url, "IN FILE")
 
             else:
                 print(f"Found directory: {url}")
                 directories_output.add(url)                    
-                check_for_links(html, target_url, "IN DIRECTORY")
+                check_for_links(req.text, target_url, "IN DIRECTORY")
     except Exception as e:
         pass
 
 def execute_subdomain_bruteforce(target_url, subdomains):
-    for subdomain in subdomains:
-        check_subdomains(target_url, subdomain)
+    for i in tqdm(range(len(subdomains))):
+        check_subdomains(target_url, subdomains[i])
 
 def execute_directory_bruteforce(target_url, directories):
-    for directory in directories:
-        check_directories(target_url, directory)
+    for i in tqdm(range(len(directories))):
+        check_directories(target_url, directories[i])
 
 def subdomain_worker_thread(target_url, subdomains, num_threads):
 
