@@ -158,28 +158,26 @@ def check_directories(target_url, directory):
         pass
 
 def execute_subdomain_bruteforce(target_url, subdomains):
-    print("Starting subdomain bruteforce on chunk of size: " + str(len(subdomains)))
     for subdomain in subdomains:
         print(f"Checking subdomain: {subdomain}")
         check_subdomains(target_url, subdomain)
 
 def execute_directory_bruteforce(target_url, directories):
-    print("Starting directory bruteforce on chunk of size: " + str(len(directories)))
     for directory in directories:
         print(f"Checking directory: {directory}")
         check_directories(target_url, directory)
 
 def subdomain_worker_thread(target_url, subdomains):
+    global number_of_threads_for_subdomain
+
     print("Starting subdomain worker thread...")
 
-    chunk_size_percentage = 0.2
-    chunk_size = int(len(subdomains) * chunk_size_percentage)
+    chunk_size = int(len(subdomains)/number_of_threads_for_subdomain)
 
     print(f"Subdomains Chunk size: {chunk_size}")
 
-
     subdomains_chunks = [subdomains[i:i + chunk_size] for i in range(0, len(subdomains), chunk_size)]
-    print(f"There are {len(subdomains_chunks)} subdomains chunks")
+    print(f"Generated {len(subdomains_chunks)} subdomains chunks")
     
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(subdomains_chunks)) as executor:
@@ -188,14 +186,14 @@ def subdomain_worker_thread(target_url, subdomains):
     
 
 def directory_worker_thread(target_url, directories):
+    global number_of_threads_for_directories
     print("Starting directory worker thread...")
 
-    chunk_size_percentage = 0.2
-    chunk_size = int(len(directories) * chunk_size_percentage)
+    chunk_size = int(len(directories)/number_of_threads_for_directories)
 
     print(f"Directories Chunk size: {chunk_size}")
     directories_chunks = [directories[i:i + chunk_size] for i in range(0, len(directories), chunk_size)]
-    print(f"There are {len(directories_chunks)} directories chunks")
+    print(f"Generated {len(directories_chunks)} directories chunks")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(directories_chunks)) as executor:
         for directory_chunk in directories_chunks:
@@ -206,6 +204,9 @@ def main():
     global subdomains_output
     global directories_output
     global files_output
+
+    global subdomain_file_path
+    global directory_file_path
 
     print("""\n\n                                                                                                  
 EEEEEEEEEEEEEEEEEEEEEENNNNNNNN        NNNNNNNNUUUUUUUU     UUUUUUUUMMMMMMMM               MMMMMMMM
@@ -258,8 +259,7 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
         sys.exit(1)
     
     # Read the subdomains and directories from the provided files
-    subdomain_file_path = "./input_files/subdomains_tiny.bat"
-    directory_file_path = "./input_files/dirs_medium.bat"
+
     subdomains = open(subdomain_file_path, "r").read().splitlines()
     directories = open(directory_file_path, "r").read().splitlines()
 
@@ -340,4 +340,11 @@ if __name__ == "__main__":
     subdomains_output = set()
     directories_output = set()
     files_output = set()
+
+    subdomain_file_path = "./input_files/subdomains_tiny.bat"
+    directory_file_path = "./input_files/dirs_small.bat"
+
+    number_of_threads_for_subdomain = 10
+    number_of_threads_for_directories = 10
+
     main()
