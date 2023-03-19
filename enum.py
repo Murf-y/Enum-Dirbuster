@@ -69,29 +69,30 @@ def check_subdomains(target_url, subdomain):
     try:
         if not is_valid_url(url):
             return
-        req = requests.get(url)
-        if req.status_code == 200:
+        req = requests.head(url)
+        # No 404 page
+        if req.status_code == 200 and  "404" not in req.text:
             print(f"Found subdomain: {url}")
             subdomains_output.add(url)
-            # Check if the subdomain has any links
-            subdomain_links = check_for_links(req.content)
-            # Add the links to the directories_output set
-            for link in subdomain_links:
-                if link == "":
-                    continue
+            # # Check if the subdomain has any links
+            # subdomain_links = check_for_links(req.content)
+            # # Add the links to the directories_output set
+            # for link in subdomain_links:
+            #     if link == "":
+            #         continue
                 
-                # Check if link is a subdomain or directory using regex
-                # Link is a subdomain if it contains http or https then some text then a dot then the target url
-                regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
+            #     # Check if link is a subdomain or directory using regex
+            #     # Link is a subdomain if it contains http or https then some text then a dot then the target url
+            #     regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
                 
-                # Subdomain
-                if re.search(regex, link):
-                    if link not in subdomains_output:
-                        subdomains_output.add(link)
-                        print(f"IN SUBDOMAIN: Found subdomain: {link}")
-                elif link not in directories_output:
-                    directories_output.add(link)
-                    print(f"IN SUBDOMAIN: Found directory: {link}")
+            #     # Subdomain
+            #     if re.search(regex, link):
+            #         if link not in subdomains_output:
+            #             subdomains_output.add(link)
+            #             print(f"IN SUBDOMAIN: Found subdomain: {link}")
+            #     elif link not in directories_output:
+            #         directories_output.add(link)
+            #         print(f"IN SUBDOMAIN: Found directory: {link}")
     # except all exceptions  
     except Exception as e:
         pass
@@ -109,77 +110,94 @@ def check_directories(target_url, directory):
     try:
         if not is_valid_url(url):
             return
-        req = requests.get(url)
-        if req.status_code == 200:
+        req = requests.head(url)
+        if req.status_code == 200 and "404" not in req.text:
             # if directory is a file, add it to the files_output set
             if "." in directory:
                 print(f"Found file: {url}")
                 files_output.add(url)
                 
-                extra_links = check_for_links(req.content)
-                # Add the links to the directories_output set
-                for link in extra_links:
-                    if link == "" or link in directories_output:
-                        continue
+                # extra_links = check_for_links(req.content)
+                # # Add the links to the directories_output set
+                # for link in extra_links:
+                #     if link == "" or link in directories_output:
+                #         continue
                 
-                    # Check if link is a subdomain or directory using regex
-                    # Link is a subdomain if it contains http or https then some text then a dot then the target url
-                    regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
-                    # Subdomain
-                    if re.search(regex, link):
-                        if link not in subdomains_output:
-                            subdomains_output.add(link)
-                            print(f"IN FILE: Found subdomain: {link}")
-                        elif link not in directories_output:
-                            directories_output.add(link)
-                            print(f"IN FILE: Found directory: {link}")
+                #     # Check if link is a subdomain or directory using regex
+                #     # Link is a subdomain if it contains http or https then some text then a dot then the target url
+                #     regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
+                #     # Subdomain
+                #     if re.search(regex, link):
+                #         if link not in subdomains_output:
+                #             subdomains_output.add(link)
+                #             print(f"IN FILE: Found subdomain: {link}")
+                #         elif link not in directories_output:
+                #             directories_output.add(link)
+                #             print(f"IN FILE: Found directory: {link}")
             else:
                 print(f"Found directory: {url}")
                 directories_output.add(url)                    
-                extra_links = check_for_links(req.content)
-                # Add the links to the directories_output set
-                for link in extra_links:
-                    if link == "" or link in directories_output:
-                        continue
+                # extra_links = check_for_links(req.content)
+                # # Add the links to the directories_output set
+                # for link in extra_links:
+                #     if link == "" or link in directories_output:
+                #         continue
                 
-                    # Check if link is a subdomain or directory using regex
-                    # Link is a subdomain if it contains http or https then some text then a dot then the target url
-                    regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
-                    # Subdomain
-                    if re.search(regex, link):
-                        if link not in subdomains_output:
-                            subdomains_output.add(link)
-                            print(f"IN DIRECTORY: Found subdomain: {link}")
-                        elif link not in directories_output:
-                            directories_output.add(link)
-                            print(f"IN DIRECTORY: Found directory: {link}")
+                #     # Check if link is a subdomain or directory using regex
+                #     # Link is a subdomain if it contains http or https then some text then a dot then the target url
+                #     regex = r"(?:https?:\/\/)(?:\w+\.?)+(?:\.)" + target_url[7:]
+                #     # Subdomain
+                #     if re.search(regex, link):
+                #         if link not in subdomains_output:
+                #             subdomains_output.add(link)
+                #             print(f"IN DIRECTORY: Found subdomain: {link}")
+                #         elif link not in directories_output:
+                #             directories_output.add(link)
+                #             print(f"IN DIRECTORY: Found directory: {link}")
     except Exception as e:
         pass
 
 def execute_subdomain_bruteforce(target_url, subdomains):
+    print("Starting subdomain bruteforce on chunk of size: " + str(len(subdomains)))
     for subdomain in subdomains:
+        print(f"Checking subdomain: {subdomain}")
         check_subdomains(target_url, subdomain)
 
 def execute_directory_bruteforce(target_url, directories):
+    print("Starting directory bruteforce on chunk of size: " + str(len(directories)))
     for directory in directories:
+        print(f"Checking directory: {directory}")
         check_directories(target_url, directory)
 
 def subdomain_worker_thread(target_url, subdomains):
-    # split the subdomains list into 10 chunks
-    subdomains_chunks = [subdomains[i:i + 10] for i in range(0, len(subdomains), 10)]
+    print("Starting subdomain worker thread...")
+
+    chunk_size_percentage = 0.2
+    chunk_size = int(len(subdomains) * chunk_size_percentage)
+
+    print(f"Subdomains Chunk size: {chunk_size}")
+
+
+    subdomains_chunks = [subdomains[i:i + chunk_size] for i in range(0, len(subdomains), chunk_size)]
+    print(f"There are {len(subdomains_chunks)} subdomains chunks")
     
-    # create 10 threads and make them work concurrently
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(subdomains_chunks)) as executor:
         for subdomain_chunk in subdomains_chunks:
             executor.submit(execute_subdomain_bruteforce, target_url, subdomain_chunk)
     
 
 def directory_worker_thread(target_url, directories):
-    # split the directories list into 10 chunks
-    directories_chunks = [directories[i:i + 10] for i in range(0, len(directories), 10)]
+    print("Starting directory worker thread...")
 
-    # create 10 threads and make them work concurrently
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    chunk_size_percentage = 0.2
+    chunk_size = int(len(directories) * chunk_size_percentage)
+
+    print(f"Directories Chunk size: {chunk_size}")
+    directories_chunks = [directories[i:i + chunk_size] for i in range(0, len(directories), chunk_size)]
+    print(f"There are {len(directories_chunks)} directories chunks")
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(directories_chunks)) as executor:
         for directory_chunk in directories_chunks:
             executor.submit(execute_directory_bruteforce, target_url, directory_chunk)
     
@@ -231,6 +249,8 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
         print("Invalid URL. Please enter a valid URL.")
         sys.exit(1)
 
+    print("Target website's URL is valid.")
+
     # Check if there is a input_files directory
     if "input_files" not in os.listdir("."):
         print("The input_files directory does not exist.")
@@ -238,12 +258,18 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
         sys.exit(1)
     
     # Read the subdomains and directories from the provided files
-    subdomains = open("./input_files/subdomains_small.bat", "r").read().splitlines()
-    directories = open("./input_files/dirs_dictionary.bat", "r").read().splitlines()
+    subdomain_file_path = "./input_files/subdomains_tiny.bat"
+    directory_file_path = "./input_files/dirs_medium.bat"
+    subdomains = open(subdomain_file_path, "r").read().splitlines()
+    directories = open(directory_file_path, "r").read().splitlines()
+
+    print("Loaded subdomains from:" + subdomain_file_path)
+    print("Loaded directories from:" + directory_file_path)
 
     print("\n\nEnumerating subdomains, directories and files...\n\n")
 
    
+    print("Starting subdomain and directory worker threads concurrently...")
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         executor.submit(subdomain_worker_thread, target_url, subdomains)
         executor.submit(directory_worker_thread, target_url, directories)
