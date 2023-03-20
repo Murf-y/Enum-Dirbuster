@@ -30,6 +30,7 @@ check_links_preceded_by_pattern = re.compile(r"(?<=href=\")([^\"]+)|(?<=src=\")(
 check_if_valid_url_pattern = re.compile(r"^(http|https|ftp)://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(/\S*)?$")
 def check_for_links(html, target_url, in_what):
     global directories_output
+    global subdomains_output
 
     """
     Check if the html contains any links
@@ -61,8 +62,12 @@ def check_for_links(html, target_url, in_what):
                     subdomains_output.add(link)
                     print(f"{in_what}: Found subdomain: {link}")
                 else:
-                    directories_output.add(link)
-                    print(f"{in_what}: Found directory: {link}")
+                    if "." in link:
+                        files_output.add(link)
+                        print(f"{in_what}: Found file: {link}")
+                    else:
+                        directories_output.add(link)
+                        print(f"{in_what}: Found directory: {link}")
 
 def is_valid_url(url):
     return True if re.search(check_if_valid_url_pattern, url) else False
@@ -268,7 +273,7 @@ EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNN      UUUUUUUUU      MMMMMMMM     
     with open("./output_files/files_output.bat", "w") as f:
         for file in files_output:
             f.write(file + "\n")
-
+        
 def brute_force_login(login_api):
     # Brute force the login API through a dictionary attack on POST requests
 
